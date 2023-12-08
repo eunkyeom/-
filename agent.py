@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class QLearningAgent:
     def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_prob=0.2):
         self.learning_rate = learning_rate
@@ -52,3 +51,22 @@ class QLearningAgent:
         # Update the Q-value table
         action_tuple = tuple(action)
         self.q_values[(state, action_tuple)] = new_q_value
+
+    def get_state_representation(self, state):
+        return tuple(state.flatten())
+
+    def load_q_values(self, file_path):
+        # Load Q-values from a file
+        try:
+            self.q_values = np.load(file_path, allow_pickle=True).item()
+            print("Q-values loaded successfully.")
+        except Exception as e:
+            print(f"Error loading Q-values: {e}")
+
+    def save_q_values(self, file_path):
+        # Save Q-values to a file
+        try:
+            np.save(file_path, self.q_values)
+            print("Q-values saved successfully.")
+        except Exception as e:
+            print(f"Error saving Q-values: {e}")
