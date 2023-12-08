@@ -14,7 +14,7 @@ class OmokRL(Rule):
         self.agent = agent
         self.last_move = None
 
-    def play_game(self):
+    def play_game_with_rl(self):
         pygame.init()
         clock = pygame.time.Clock()
 
@@ -22,6 +22,9 @@ class OmokRL(Rule):
 
         player = self.BLACK
         game_over = False
+
+        # Load the Q-values from a file
+        self.agent.load_q_values("q_values.npy")
 
         while not game_over:
             for event in pygame.event.get():
@@ -102,4 +105,4 @@ q_learning_agent = QLearningAgent()
 
 # Create an instance of the game with RL integration
 game_rl = OmokRL(q_learning_agent)
-game_rl.play_game()
+game_rl.play_game_with_rl()
