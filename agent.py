@@ -3,70 +3,60 @@
 import numpy as np
 
 class QLearningAgent:
-    def __init__(self, learning_rate=0.1, discount_factor=0.9, exploration_prob=0.2):
-        self.learning_rate = learning_rate
-        self.discount_factor = discount_factor
-        self.exploration_prob = exploration_prob
+    def __init__(self, board_size=15):
         self.q_values = {}
+        self.learning_rate = 0.1
+        self.discount_factor = 0.9
+        self.epsilon = 0.1
+        self.BOARD_SIZE = board_size
 
     def get_action(self, state):
         possible_actions = self.get_possible_actions(state)
 
         if len(possible_actions) > 0:
-            # Choose a random action among all possible actions
+            # 가능한 모든 액션 중에서 무작위로 액션 선택
             chosen_action = possible_actions[np.random.choice(len(possible_actions))]
-            print(f"Chosen action: {chosen_action}")
             return chosen_action
         else:
-            # No possible actions, return None or handle this case as needed
+            # 가능한 액션이 없으면 None을 반환하거나 필요한 경우 이 상황을 처리
             return None
 
     def get_possible_actions(self, state):
-        # Flatten the state representation and find indices of empty positions
-        empty_positions = [index for index, value in enumerate(state) if value == 0]
-
-        # Convert the flattened indices to (row, col) format
-        possible_actions = [(index // int(np.sqrt(len(state))), index % int(np.sqrt(len(state)))) for index in
-                            empty_positions]
-
-        # Return as a 1-dimensional NumPy array
-        return np.array(possible_actions)
+        state_2d = np.array(state).reshape((self.BOARD_SIZE, self.BOARD_SIZE))
+        empty_positions = [(i, j) for i in range(self.BOARD_SIZE) for j in range(self.BOARD_SIZE) if state_2d[i, j] == 0]
+        return empty_positions
 
     def get_q_value(self, state, action):
+        state_str = str(state)
         action_tuple = tuple(action)
-        return self.q_values.get((state, action_tuple), 0.0)
+        return self.q_values.get((state_str, action_tuple), 0.0)
 
     def update_q_values(self, state, action, reward):
-        # Update Q-values based on the observed state, action, and reward
         current_q_value = self.get_q_value(state, action)
-
-        # Estimate the best possible future value
         max_future_value = max(
             [self.get_q_value(state, next_action) for next_action in self.get_possible_actions(state)])
 
-        # Q-value update using the Bellman equation
         new_q_value = (1 - self.learning_rate) * current_q_value + self.learning_rate * (
-                    reward + self.discount_factor * max_future_value)
+                reward + self.discount_factor * max_future_value)
 
-        # Update the Q-value table
+        state_str = str(state)
         action_tuple = tuple(action)
-        self.q_values[(state, action_tuple)] = new_q_value
+        self.q_values[(state_str, action_tuple)] = new_q_value
+        print(f"Updated Q-value for state: {state}, action: {action}, new Q-value: {new_q_value}")
 
     def get_state_representation(self, state):
-        return tuple(state.flatten())
+        return tuple(map(int, state))
 
     def load_q_values(self, file_path):
-        # Load Q-values from a file
         try:
             self.q_values = np.load(file_path, allow_pickle=True).item()
-            print("Q-values loaded successfully.")
+            print("Q-values 로드 성공.")
         except Exception as e:
-            print(f"Error loading Q-values: {e}")
+            print(f"Q-values 로드 중 오류 발생: {e}")
 
     def save_q_values(self, file_path):
-        # Save Q-values to a file
         try:
             np.save(file_path, self.q_values)
-            print("Q-values saved successfully.")
+            print("Q-values 저장 성공.")
         except Exception as e:
-            print(f"Error saving Q-values: {e}")
+            print(f"Q-values 저장 중 오류 발생: {e}")
