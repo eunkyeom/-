@@ -23,7 +23,7 @@ class OmokRL(Rule):
         player = self.BLACK
         game_over = False
 
-        # Load the Q-values from a file
+        # Q-values 파일에서 Q-values 로드
         self.agent.load_q_values("q_values.npy")
 
         while not game_over:
@@ -47,7 +47,7 @@ class OmokRL(Rule):
                         else:
                             state = self.get_state_representation()
                             action = self.agent.get_action(state)
-                            self.agent.update_q_values(state, action, self.calculate_reward(player))
+                            reward = self.calculate_reward(player)
                             self.make_computer_move()
                             if self.check_win(row, col, player):
                                 game_over = True
@@ -56,9 +56,15 @@ class OmokRL(Rule):
                             elif self.check_draw():
                                 game_over = True
                                 self.show_alert("무승부입니다.")
+                            self.agent.update_q_values(state, action, reward)
 
             pygame.display.update()
             clock.tick(60)
+
+        # 게임이 종료된 후, Q-values 출력
+        self.print_q_values()
+        # 게임이 종료된 후, Q-values 저장
+        self.agent.save_q_values("q_values.npy")
 
         pygame.quit()
 
@@ -86,7 +92,8 @@ class OmokRL(Rule):
             draw.draw_stone(row, col, self.WHITE)
 
     def get_state_representation(self):
-        return tuple(np.array(self.board).flatten())
+        # 튜플을 NumPy 배열로 변환
+        return np.array(self.board).flatten()
 
     def check_draw(self):
         for i in range(self.BOARD_SIZE):
@@ -97,12 +104,21 @@ class OmokRL(Rule):
 
     def show_alert(self, message):
         root = tk.Tk()
-        root.withdraw()  # Hide the default window
+        root.withdraw()  # 기본 창 숨기기
         messagebox.showinfo("축하합니다!", message)
 
-# Create an instance of the Q-learning agent
+    def print_q_values(self):
+        print("게임 종료 후 Q-values:")
+        for i in range(self.BOARD_SIZE):
+            for j in range(self.BOARD_SIZE):
+                state = self.get_state_representation()
+                action = (i, j)
+                q_value = self.agent.get_q_value(state, action)
+                print(f"위치 ({i}, {j})의 Q-value: {q_value}")
+
+# Q-learning 에이전트의 인스턴스 생성
 q_learning_agent = QLearningAgent()
 
-# Create an instance of the game with RL integration
+# RL 통합 게임의 인스턴스 생성
 game_rl = OmokRL(q_learning_agent)
 game_rl.play_game_with_rl()
