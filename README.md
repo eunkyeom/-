@@ -6,6 +6,11 @@
  - (231207) create_and_train_gibo.py 추가
  - (231209) 기보데이터 랜덤으로 만들어서 학습하도록 수정
 
+*** 실행 순서
+
+ - 1. create_and_train_gibo.py 실행 (기보데이터 생성 및 강화학습)
+   2. main.py (실제 게임 실행)
+
 *** 파일 설명
 
 main.py
